@@ -52,6 +52,29 @@ import {onMounted, ref} from "vue";
 const gridArr = ref([]);
 const snakeArr = ref([]);
 
+function getKeyPress(event) {
+  switch (event.keyCode) {
+    case 37: // Left
+      moveSnake(0, -50);
+      break;
+    case 38: // Up
+      moveSnake(-50, 0);
+      break;
+    case 39: // Right
+      moveSnake(0, 50);
+      break;
+    case 40: // Down
+      moveSnake(50, 0);
+      break;
+  }
+
+}
+
+function moveSnake(topAdjustmentVal, leftAdjustmentVal) {
+  snakeArr.value[0].top += topAdjustmentVal;
+  snakeArr.value[0].left += leftAdjustmentVal;
+}
+
 function chooseSnakeStartingHeadPositionOnGrid() {
   const randomPosRow = Math.floor(Math.random() * gridArr.value.length).toString();
   const randomPosCol = Math.floor(Math.random() * gridArr.value[0].length).toString();
@@ -65,6 +88,8 @@ function chooseSnakeStartingHeadPositionOnGrid() {
 }
 
 onMounted(() => {
+  document.addEventListener('keydown', getKeyPress);
+
   for (let i = 0; i < 10; i++) {
     gridArr.value.push([]);
     for (let k = 0; k < 10; k++) {
@@ -81,11 +106,8 @@ onMounted(() => {
         col.blockInfo = document.getElementById(`${col.blockCoords}`).getBoundingClientRect();
       })
     })
-
     chooseSnakeStartingHeadPositionOnGrid();
-
   }, 500)
-
 })
 
 </script>

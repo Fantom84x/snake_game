@@ -6,14 +6,9 @@
   </v-app>
 </template>
 
-<script>
+<script setup>
 import AppSnakeBoard from './components/AppSnakeBoard.vue'
 
-export default {
-  components: {
-    AppSnakeBoard,
-  },
-}
 </script>
 
 <style>
