@@ -1,54 +1,90 @@
 <template>
   <div
-    class="b1 d-flex flex-column"
+    class="d-flex flex-column justify-center align-center"
     style="width: 100%; height: 100%"
   >
+
     <div
-      v-for="(row, i) in cellsInfoArr"
-      :key="i + 'A'"
-      class="d-flex"
+      id="gridBorder"
+      style="position: relative"
     >
       <div
-        v-for="(cell, k) in row"
-        :key="k + 'A'"
-        :id="cell"
+        v-for="(row, i) in gridArr"
+        :key="i + 'A'"
         class="d-flex"
       >
         <div
-          class="b2"
-          style="width: 30px; height: 30px"
-        ></div>
+          v-for="(col, k) in row"
+          :key="k + 'A'"
+        >
 
+          <div
+            :id="col.blockCoords"
+            class="b3 d-flex justify-center align-center"
+            style="width: 50px; height: 50px"
+          >
+            {{ col.blockCoords }}
+          </div>
+
+        </div>
       </div>
+
+
+      <template
+        v-for="(snakeBlock, i) in snakeArr"
+        :key="i + 'A'"
+      >
+        <div
+          style="position: absolute; height: 48px; width: 48px; background-color: rgba(0, 128, 0, 75%)"
+          :style="`top: ${snakeBlock.top}px; left: ${snakeBlock.left}px`"
+        ></div>
+      </template>
 
     </div>
 
-    <v-btn
-      text="Click Me"
-      @click="myFunction"
-    ></v-btn>
-
   </div>
+
 </template>
 
 <script setup>
 import {onMounted, ref} from "vue";
 
-const cellsInfoArr = ref([]);
+const gridArr = ref([]);
+const snakeArr = ref([]);
 
-function myFunction() {
-  console.log(document.getElementById('43').getBoundingClientRect());
+function chooseSnakeStartingHeadPositionOnGrid() {
+  const randomPosRow = Math.floor(Math.random() * gridArr.value.length).toString();
+  const randomPosCol = Math.floor(Math.random() * gridArr.value[0].length).toString();
+  const gridBlock = gridArr.value[randomPosRow][randomPosCol];
+  const gridBorder = document.getElementById('gridBorder').getBoundingClientRect();
+  snakeArr.value.push({
+    top: (gridBlock.blockInfo.top - gridBorder.top) + 1,
+    left: (gridBlock.blockInfo.left - gridBorder.left) + 1
+  });
+  console.log(snakeArr.value);
 }
 
 onMounted(() => {
-  for (let i = 0; i < 5; i++) {
-    cellsInfoArr.value.push([]);
-    for (let j = 0; j < 5; j++) {
-      cellsInfoArr.value[i].push(`${i}${j}`);
+  for (let i = 0; i < 10; i++) {
+    gridArr.value.push([]);
+    for (let k = 0; k < 10; k++) {
+      gridArr.value[i].push({
+        blockCoords: `${i}${k}`,
+        blockInfo: null
+      });
     }
   }
 
-  console.log(cellsInfoArr.value);
+  setTimeout(() => {
+    gridArr.value.forEach(row => {
+      row.forEach(col => {
+        col.blockInfo = document.getElementById(`${col.blockCoords}`).getBoundingClientRect();
+      })
+    })
+
+    chooseSnakeStartingHeadPositionOnGrid();
+
+  }, 500)
 
 })
 
@@ -59,9 +95,12 @@ onMounted(() => {
   border: 1px solid deeppink;
 }
 .b2 {
-  border: 1px solid deepskyblue;
+  border: 1px solid yellow;
 }
 .b3 {
-  border: 1px solid yellow;
+  border: 1px solid deepskyblue;
+}
+.b4 {
+  border: 1px solid green;
 }
 </style>
