@@ -51,6 +51,7 @@ import {onMounted, ref} from "vue";
 
 const gridArr = ref([]);
 const snakeArr = ref([]);
+const gridBorder = ref(null);
 
 function getKeyPress(event) {
   switch (event.keyCode) {
@@ -67,29 +68,71 @@ function getKeyPress(event) {
       moveSnake(50, 0);
       break;
   }
-
 }
 
 function moveSnake(topAdjustmentVal, leftAdjustmentVal) {
-  snakeArr.value[0].top += topAdjustmentVal;
-  snakeArr.value[0].left += leftAdjustmentVal;
+
+  console.log(snakeArr.value);
+
+  // snakeArr.value[0].top += topAdjustmentVal;
+  // snakeArr.value[0].left += leftAdjustmentVal;
+  // snakeArr.value[1].top += topAdjustmentVal;
+  // snakeArr.value[1].left += leftAdjustmentVal;
+
+  const newSnakeArr = [];
+
+  for (let i = 0; i < snakeArr.value.length; i++) {
+    if (i === 0) {
+      newSnakeArr.push({
+        top: snakeArr.value[i].top + topAdjustmentVal,
+        left: snakeArr.value[i].left + leftAdjustmentVal,
+      });
+      continue;
+    }
+
+    newSnakeArr.push({
+      top: snakeArr.value[i - 1].top,
+      left: snakeArr.value[i - 1].left,
+    });
+
+  }
+
+  console.log(newSnakeArr);
+
+  snakeArr.value = newSnakeArr;
+
 }
 
 function chooseSnakeStartingHeadPositionOnGrid() {
   const randomPosRow = Math.floor(Math.random() * gridArr.value.length).toString();
   const randomPosCol = Math.floor(Math.random() * gridArr.value[0].length).toString();
   const gridBlock = gridArr.value[randomPosRow][randomPosCol];
-  const gridBorder = document.getElementById('gridBorder').getBoundingClientRect();
   snakeArr.value.push({
-    top: (gridBlock.blockInfo.top - gridBorder.top) + 1,
-    left: (gridBlock.blockInfo.left - gridBorder.left) + 1
+    top: (gridBlock.blockInfo.top - gridBorder.value.top) + 1,
+    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
   });
-  console.log(snakeArr.value);
+  snakeArr.value.push({
+    top: ((gridBlock.blockInfo.top + 50) - gridBorder.value.top) + 1,
+    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
+  });
+  snakeArr.value.push({
+    top: ((gridBlock.blockInfo.top + 100) - gridBorder.value.top) + 1,
+    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
+  });
+  snakeArr.value.push({
+    top: ((gridBlock.blockInfo.top + 150) - gridBorder.value.top) + 1,
+    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
+  });
+  snakeArr.value.push({
+    top: ((gridBlock.blockInfo.top + 200) - gridBorder.value.top) + 1,
+    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
+  });
 }
 
 onMounted(() => {
   document.addEventListener('keydown', getKeyPress);
 
+  // Build Grid
   for (let i = 0; i < 10; i++) {
     gridArr.value.push([]);
     for (let k = 0; k < 10; k++) {
@@ -100,7 +143,9 @@ onMounted(() => {
     }
   }
 
+  // Get Grid Info
   setTimeout(() => {
+    gridBorder.value = document.getElementById('gridBorder').getBoundingClientRect();
     gridArr.value.forEach(row => {
       row.forEach(col => {
         col.blockInfo = document.getElementById(`${col.blockCoords}`).getBoundingClientRect();
