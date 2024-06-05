@@ -52,8 +52,16 @@ import {onMounted, ref} from "vue";
 const gridArr = ref([]);
 const snakeArr = ref([]);
 const gridBorder = ref(null);
+const setTimeoutVal = ref(null);
+const previousPressedKeyCode = ref(null);
 
 function getKeyPress(event) {
+
+  if (previousPressedKeyCode.value === event.keyCode)
+    return;
+
+  previousPressedKeyCode.value = event.keyCode;
+
   switch (event.keyCode) {
     case 37: // Left
       moveSnake(0, -50);
@@ -72,12 +80,8 @@ function getKeyPress(event) {
 
 function moveSnake(topAdjustmentVal, leftAdjustmentVal) {
 
-  console.log(snakeArr.value);
-
-  // snakeArr.value[0].top += topAdjustmentVal;
-  // snakeArr.value[0].left += leftAdjustmentVal;
-  // snakeArr.value[1].top += topAdjustmentVal;
-  // snakeArr.value[1].left += leftAdjustmentVal;
+  if (setTimeoutVal.value)
+    clearTimeout(setTimeoutVal.value);
 
   const newSnakeArr = [];
 
@@ -100,6 +104,10 @@ function moveSnake(topAdjustmentVal, leftAdjustmentVal) {
   console.log(newSnakeArr);
 
   snakeArr.value = newSnakeArr;
+
+  setTimeoutVal.value = setTimeout(() => {
+    moveSnake(topAdjustmentVal, leftAdjustmentVal);
+  }, 500)
 
 }
 
