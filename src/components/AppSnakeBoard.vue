@@ -1,13 +1,10 @@
 <template>
   <div
     class="d-flex flex-column justify-center align-center"
-    style="width: 100%; height: 100%"
+    style="width: 100%; height: 100%; position: relative"
   >
 
-    <div
-      id="gridBorder"
-      style="position: relative"
-    >
+    <div id="gridBorder">
       <div
         v-for="(row, i) in gridArr"
         :key="i + 'A'"
@@ -36,12 +33,17 @@
       >
         <div
           style="position: absolute; height: 48px; width: 48px; background-color: rgba(0, 128, 0, 75%)"
-          :style="`top: ${snakeBlock.top}px; left: ${snakeBlock.left}px`"
+          :style="`top: ${snakeBlock.top + 1}px; left: ${snakeBlock.left + 1}px`"
         ></div>
       </template>
 
     </div>
 
+    <div
+      v-if="applePosition"
+      style="position: absolute; width: 48px; height: 48px; background-color: rgba(128, 0 , 0, 0.75)"
+      :style="`top: ${applePosition.blockInfo.top + 1}px; left: ${applePosition.blockInfo.left + 1}px`"
+    ></div>
   </div>
 
 </template>
@@ -54,6 +56,8 @@ const snakeArr = ref([]);
 const gridBorder = ref(null);
 const setTimeoutVal = ref(null);
 const previousPressedKeyCode = ref(null);
+
+const applePosition = ref(null);
 
 function getKeyPress(event) {
 
@@ -87,9 +91,28 @@ function moveSnake(topAdjustmentVal, leftAdjustmentVal) {
 
   for (let i = 0; i < snakeArr.value.length; i++) {
     if (i === 0) {
+
+      const newSnakeHeadTopValue = snakeArr.value[i].top + topAdjustmentVal;
+      const newSnakeHeadLeftValue = snakeArr.value[i].left + leftAdjustmentVal;
+
+      const newGridBlock = gridArr.value.map(row => {
+        return row.find(gridBlock => {
+          if (gridBlock.blockInfo.top === newSnakeHeadTopValue && gridBlock.blockInfo.left === newSnakeHeadLeftValue)
+            return true;
+        })
+      })
+        .filter(item => item)
+        .pop();
+
+      if (!newGridBlock) {
+        console.log('CRASHED INTO A WALL')
+        return;
+      }
+
       newSnakeArr.push({
-        top: snakeArr.value[i].top + topAdjustmentVal,
-        left: snakeArr.value[i].left + leftAdjustmentVal,
+        top: newSnakeHeadTopValue,
+        left: newSnakeHeadLeftValue,
+        blockCoords: newGridBlock.blockCoords
       });
       continue;
     }
@@ -97,11 +120,12 @@ function moveSnake(topAdjustmentVal, leftAdjustmentVal) {
     newSnakeArr.push({
       top: snakeArr.value[i - 1].top,
       left: snakeArr.value[i - 1].left,
+      blockCoords: snakeArr.value[i - 1].blockCoords
     });
 
   }
 
-  console.log(newSnakeArr);
+  console.log('newSnakeArr', newSnakeArr);
 
   snakeArr.value = newSnakeArr;
 
@@ -111,30 +135,19 @@ function moveSnake(topAdjustmentVal, leftAdjustmentVal) {
 
 }
 
-function chooseSnakeStartingHeadPositionOnGrid() {
+function spawnAppleInRandomPosition() {
+  applePosition.value = getRandomSpawnPositionBlock();
+  let isAppleOnSnake = snakeArr.value.find(block => block.coords === applePosition.value.coords);
+  while (applePosition.value.coords === isAppleOnSnake) {
+    applePosition.value = getRandomSpawnPositionBlock();
+    isAppleOnSnake = snakeArr.value.find(block => block.coords === applePosition.value.coords);
+  }
+}
+
+function getRandomSpawnPositionBlock() {
   const randomPosRow = Math.floor(Math.random() * gridArr.value.length).toString();
   const randomPosCol = Math.floor(Math.random() * gridArr.value[0].length).toString();
-  const gridBlock = gridArr.value[randomPosRow][randomPosCol];
-  snakeArr.value.push({
-    top: (gridBlock.blockInfo.top - gridBorder.value.top) + 1,
-    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
-  });
-  snakeArr.value.push({
-    top: ((gridBlock.blockInfo.top + 50) - gridBorder.value.top) + 1,
-    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
-  });
-  snakeArr.value.push({
-    top: ((gridBlock.blockInfo.top + 100) - gridBorder.value.top) + 1,
-    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
-  });
-  snakeArr.value.push({
-    top: ((gridBlock.blockInfo.top + 150) - gridBorder.value.top) + 1,
-    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
-  });
-  snakeArr.value.push({
-    top: ((gridBlock.blockInfo.top + 200) - gridBorder.value.top) + 1,
-    left: (gridBlock.blockInfo.left - gridBorder.value.left) + 1
-  });
+  return gridArr.value[randomPosRow][randomPosCol];
 }
 
 onMounted(() => {
@@ -159,8 +172,18 @@ onMounted(() => {
         col.blockInfo = document.getElementById(`${col.blockCoords}`).getBoundingClientRect();
       })
     })
-    chooseSnakeStartingHeadPositionOnGrid();
+
+    const randomSpawnPosition = getRandomSpawnPositionBlock();
+    snakeArr.value.push({
+      top: randomSpawnPosition.blockInfo.top,
+      left: randomSpawnPosition.blockInfo.left,
+      blockCoords: randomSpawnPosition.blockCoords
+    });
+
+    spawnAppleInRandomPosition();
+
   }, 500)
+
 })
 
 </script>
