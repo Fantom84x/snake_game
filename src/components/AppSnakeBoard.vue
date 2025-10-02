@@ -30,6 +30,7 @@
       <template
         v-for="(snakeBlock, i) in snakeArr"
         :key="i + 'A'"
+        class="d-flex"
       >
         <div
           style="position: absolute; height: 48px; width: 48px; background-color: rgba(0, 128, 0, 75%)"
@@ -56,6 +57,7 @@ const snakeArr = ref([]);
 const gridBorder = ref(null);
 const setTimeoutVal = ref(null);
 const previousPressedKeyCode = ref(null);
+
 
 const applePosition = ref(null);
 
@@ -125,13 +127,48 @@ function moveSnake(topAdjustmentVal, leftAdjustmentVal) {
 
   }
 
-  console.log('newSnakeArr', newSnakeArr);
+  // console.log('newSnakeArr', newSnakeArr);
 
   snakeArr.value = newSnakeArr;
 
   setTimeoutVal.value = setTimeout(() => {
     moveSnake(topAdjustmentVal, leftAdjustmentVal);
   }, 500)
+
+  console.log(snakeArr.value[0]);
+  console.log(applePosition.value);
+
+  if (snakeArr.value[0].blockCoords === applePosition.value.blockCoords) {
+
+    console.log('RAN');
+
+    spawnAppleInRandomPosition();
+
+    const lastSnakeBodyBlock = snakeArr.value[snakeArr.value.length - 1];
+
+    console.log(lastSnakeBodyBlock);
+
+    const insertBlockTop = lastSnakeBodyBlock.top + topAdjustmentVal;
+    const insertBlockLeft = lastSnakeBodyBlock.left + leftAdjustmentVal;
+
+    console.log(insertBlockTop);
+    console.log(insertBlockLeft);
+
+    console.log(gridArr.value);
+
+    const foundBlock = gridArr.value
+      .map(row => row.find(col => insertBlockTop === col.blockInfo.top && insertBlockLeft === col.blockInfo.left))
+      .filter(block => block)
+      .pop();
+
+    console.log('foundBlock', foundBlock);
+
+    snakeArr.value.push({
+      top: insertBlockTop,
+      left: insertBlockLeft,
+      blockCoords: foundBlock.blockCoords
+    });
+  }
 
 }
 
